@@ -1,10 +1,14 @@
-name: Test PR
+name: Test PR 
+
 on:
   pull_request:
     paths:
     - 'src/**'
     - 'lib/**'
     - '.github/workflows/pr.yaml'
+  push:
+    branches:
+    - kediny-xoxocomic
 
 jobs:
   tests:
@@ -14,40 +18,33 @@ jobs:
       SCCACHE_VERSION: 0.3.0
     runs-on: ubuntu-latest
     steps:
-    -
-      uses: actions/checkout@v3
-    -
-      name: Get changed files
+    - uses: actions/checkout@v3
+    - name: Get changed files
       id: files
       uses: Ana06/get-changed-files@v2.2.0
       with:
         format: json
-    -
-      name: Process changed files
+    - name: Process changed files
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         readarray -t TEMP <<< "$(jq -r '.[]' <<<'${{ steps.files.outputs.added_modified }}')"
-        for line in "${TEMP[@]}"
-        do
+        for line in "${TEMP[@]}"; do
           if [[ "$line" == *"src/rust"* ]]; then
             echo "SETUP_RUST=true" >> $GITHUB_ENV
           elif [[ "$line" == *"src/as"* ]]; then
             echo "SETUP_AS=true" >> $GITHUB_ENV
           fi         
         done
-    -
-      uses: google/wireit@setup-github-actions-caching/v1
+    - uses: google/wireit@setup-github-actions-caching/v1
       if: ${{ env.SETUP_AS == 'true' }}
-    - 
-      uses: actions/setup-node@v3
+    - uses: actions/setup-node@v3
       if: ${{ env.SETUP_AS == 'true' }}
       with:
         node-version: 16
         cache: npm
         cache-dependency-path: '**/package-lock.json'
-    -
-      name: Cache rust stuff
+    - name: Cache rust stuff
       uses: actions/cache@v3
       if: ${{ env.SETUP_RUST == 'true' }}
       with:
@@ -59,22 +56,19 @@ jobs:
          src/rust/**/target
         key: ${{ runner.os }}-cargo3-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: ${{ runner.os }}-cargo3-
-    -
-      name: sccache
+    - name: sccache
       uses: actions/cache@v3
       with:
         path: ~/.cache/sccache
         key: ${{ runner.os }}-sccache-${{ github.sha }}
         restore-keys: ${{ runner.os }}-sccache-
-    -
-      uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1
       if: ${{ env.SETUP_RUST == 'true' }}
       with:
         toolchain: nightly
         override: true
         target: wasm32-unknown-unknown
-    -
-      name: Install build dependencies
+    - name: Install build dependencies
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
@@ -88,8 +82,7 @@ jobs:
         curl -L https://github.com/mozilla/sccache/releases/download/v$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz | tar -xz
         sudo mv -f $SCCACHE_FILE/sccache* /usr/local/bin/sccache
         sudo chmod +x /usr/local/bin/sccache
-    -
-      name: Build sources
+    - name: Build sources
       id: build
       run: |
         REBUILD_C_SOURCES="false"
@@ -125,15 +118,12 @@ jobs:
             )
           done
         fi
-    -
-      name: Test if sources are valid
+    - name: Test if sources are valid
       run: aidoku verify --force-color ./**/*.aix
-    -
-      name: Flatten packages directory
+    - name: Flatten packages directory
       if: always()
       run: aidoku build ./**/*.aix
-    - 
-      uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: packages
