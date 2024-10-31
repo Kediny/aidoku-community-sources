@@ -19,7 +19,7 @@ fn get_instance() -> WPComicsSource {
 
 		chapter_skip_first: true,
 		chapter_date_selector: "div.col-xs-3",
-		manga_viewer_page_url_suffix: "/comic",
+		manga_viewer_page_url_suffix: "/all",
 
 		..Default::default()
 	}
@@ -66,9 +66,24 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 }
 
 #[get_page_list]
-fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
-	get_instance().get_page_list(chapter_id)
+fn get_page_list(manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
+    let result = get_instance().get_page_list(chapter_id);
+    match result {
+        Ok(page_list) => {
+            println!("Successfully retrieved page list for manga ID: {}, chapter ID: {}", manga_id, chapter_id);
+            for page in &page_list {
+                // Print the image URL from the Swift Page struct
+                println!("Retrieved page URL: {:?}", page.imageURL); // Assuming the Page struct can be accessed
+            }
+            Ok(page_list) // Return the successful result
+        }
+        Err(e) => {
+            println!("Error retrieving page list: {}", e);
+            Err(e) // Propagate the error
+        }
+    }
 }
+
 
 #[modify_image_request]
 fn modify_image_request(request: Request) {
