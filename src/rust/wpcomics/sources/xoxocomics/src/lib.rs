@@ -66,24 +66,16 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 }
 
 #[get_page_list]
-fn get_page_list(manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
-    let result = get_instance().get_page_list(chapter_id);
-    match result {
-        Ok(page_list) => {
-            println!("Successfully retrieved page list for manga ID: {}, chapter ID: {}", manga_id, chapter_id);
-            for page in &page_list {
-                // Print the image URL from the Swift Page struct
-                println!("Retrieved page URL: {:?}", page.imageURL); // Assuming the Page struct can be accessed
-            }
-            Ok(page_list) // Return the successful result
-        }
-        Err(e) => {
-            println!("Error retrieving page list: {}", e);
-            Err(e) // Propagate the error
-        }
-    }
-}
+fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
+	let result = get_instance().get_page_list(chapter_id)?;
+    
+   	// Print the URLs of each page for debugging
+    	for page in &result {
+        	println!("Page URL: {:?}", page.imageURL);
+   	}
 
+    	Ok(result)
+}
 
 #[modify_image_request]
 fn modify_image_request(request: Request) {
