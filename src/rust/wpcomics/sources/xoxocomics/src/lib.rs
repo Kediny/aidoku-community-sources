@@ -67,20 +67,13 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 
 #[get_page_list]
 fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
-	let result = get_instance().get_page_list(chapter_id)?;
-    
-   	// Print the URLs of each page for debugging
-    	for page in &result {
-        	println!("Page URL: {:?}", page.imageURL);
-   	}
-
-    	Ok(result)
+	get_instance().get_page_list(chapter_id)
 }
 
 #[modify_image_request]
 fn modify_image_request(request: Request) {
 	template::modify_image_request(
-		String::from("https://xoxocomic.com"),
+		String::from("https://xoxocomic.com/comic"),
 		String::from("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/101.0.1210.39"),
 		request,
 	)
