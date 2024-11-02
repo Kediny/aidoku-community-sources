@@ -67,7 +67,11 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 
 #[get_page_list]
 fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
-	get_instance().get_page_list(chapter_id)
+	let result = get_instance().get_page_list(chapter_id);
+        for page in &result {
+        	println!("Page URL: {:?}", page.imageURL);
+	}
+        Ok(result)
 }
 
 #[modify_image_request]
